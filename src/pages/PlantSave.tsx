@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
     View,
     StyleSheet,
@@ -8,38 +8,77 @@ import {
     ScrollView,
     Platform,
     TouchableOpacity
- } from 'react-native';
+} from 'react-native';
 import { getBottomSpace } from 'react-native-iphone-x-helper';
-import { useRoute } from '@react-navigation/core'
+import { useNavigation, useRoute } from '@react-navigation/core';
+import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
 
- import {SvgFromUri} from 'react-native-svg';
- import waterdrop from '../assets/waterdrop.png'
+import {SvgFromUri} from 'react-native-svg';
+import waterdrop from '../assets/waterdrop.png';
 import { Button } from '../components/Button';
 
- import colors from '../styles/colors'
- import fonts from '../styles/fonts'
+import colors from '../styles/colors';
+import fonts from '../styles/fonts';
+import { format, isBefore } from 'date-fns';
+import { PlantProps, savePlant } from '../libs/storage';
 
 
 interface Params {
-    plant:{
-        id: string;
-        name: string;
-        about: string;
-        water_tips: string;
-        photo: string;
-        environments: [string];
-        frequency: {
-            times: number;
-            repeat_every: string;
-        }
-    }
+    plant: PlantProps
 }
 
 export function PlantSave(){
 
+    const[selectDateTime, setSelectDateTime] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(Platform.OS == 'ios');
+
+    const navigation = useNavigation();
+
     const route = useRoute();
 
     const { plant } = route.params as Params;
+
+    function handleChangeTime(event: Event, dateTime: Date | undefined){
+        if(Platform.OS === 'android'){
+            setShowDatePicker(oldState => !oldState);
+        }
+
+        if(dateTime && isBefore(dateTime, new Date())){
+            setSelectDateTime(new Date());
+
+            return Alert.alert('Escolha uma hora no futuro! ⏰')
+        }
+
+        if(dateTime){
+            setSelectDateTime(dateTime);
+        }
+
+    }
+
+    function handleOpenDateTimePickerForAndroid(){
+        setShowDatePicker(oldState => !oldState)
+    }
+
+    async function handleSavePlant(){
+        try{
+            await savePlant({
+                ...plant,
+                dateTimeNotification: selectDateTime
+            });
+
+            navigation.navigate('Confirmation',{
+                title: 'Tudo certo!',
+                subtitle: 'Fique tranquilo que sempre vamos lembrar você de cuidar de sua plantinha com muito cuidado',
+                buttonTitle: 'Muito Obrigado :D',
+                icon: 'hug',
+                nextScreen: 'MyPlants'
+            });
+
+
+        }catch{
+            Alert.alert('Não foi possível salvar sua plantinha 😢')
+        }
+    }
 
     return(
         <View style={styles.container}>
@@ -76,9 +115,29 @@ export function PlantSave(){
                     Escolhe o melhor horário para ser lembrado:
                 </Text>
 
+                {
+                    showDatePicker ? (    
+                        <DateTimePicker
+                            value={selectDateTime}
+                            mode="time"
+                            display="spinner"
+                            onChange={handleChangeTime}
+                        />
+                    ):(
+                        <TouchableOpacity 
+                            style = {styles.dateTimePickerButton}
+                            onPress={handleOpenDateTimePickerForAndroid}
+                        >
+                            <Text style={styles.dateTimePickerText}>
+                                {`Mudar ${format(selectDateTime, 'HH:mm')}`}
+                            </Text>
+                        </TouchableOpacity>
+                    )
+                }
+
                 <Button
                     title="Cadastrar planta"
-                    onPress={()=>{}}
+                    onPress={handleSavePlant}
                 />
 
             </View>
@@ -149,4 +208,15 @@ const styles = StyleSheet.create({
         fontSize:14,
         marginBottom: 5
     },
+    dateTimePickerButton:{
+        width:'100%',
+        alignItems: 'center',
+        paddingVertical: 40
+    },
+    dateTimePickerText:{
+        color: colors.heading,
+        fontSize: 24,
+        fontFamily: fonts.text,
+    }           
+
 })
