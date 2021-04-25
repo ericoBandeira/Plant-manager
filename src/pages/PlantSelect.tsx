@@ -40,7 +40,7 @@ export function PlantSelect(){
 
     async function fetchPlants() {
         const {data} = await api
-        .get(`plants?_sort=name&_order=asc&_page${page}&_limit=8`)
+        .get(`plants?_sort=name&_order=asc&_page${page}&_limit=12`)
 
         if(!data)
             return setLoading(true);
