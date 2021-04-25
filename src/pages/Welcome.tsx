@@ -22,7 +22,7 @@ export function Welcome(){
     const navigation = useNavigation();
 
     function handleStart(){
-        navigation.navigate('UserIdentification')
+        navigation.navigate('newPhoto')
     }
    
     return(
@@ -46,9 +46,9 @@ export function Welcome(){
                 </Text>
 
                 <TouchableOpacity
-                style={style.button} 
-                activeOpacity={0.8}
-                onPress={handleStart}
+                    style={style.button} 
+                    activeOpacity={0.8}
+                    onPress={handleStart}
                 >
                         <Feather name="chevron-right" style={style.buttonIcon}/>
                 </TouchableOpacity>

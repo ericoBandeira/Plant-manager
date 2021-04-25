@@ -12,6 +12,7 @@ import { Confirmation } from '../pages/Confirmation';
 import { PlantSave } from '../pages/PlantSave';
 import { MyPlants } from '../pages/MyPlants';
 import AuthRoutes from './tab.routes';
+import { newPhoto } from '../pages/newPhoto';
 
 
 const stackRoutes = createStackNavigator();
@@ -32,6 +33,10 @@ const AppRoutes: React.FC = () => (
         <stackRoutes.Screen
             name="UserIdentification"
             component={UserIdentification}
+        />
+        <stackRoutes.Screen
+            name="newPhoto"
+            component={newPhoto}
         />
         <stackRoutes.Screen
             name="Confirmation"
